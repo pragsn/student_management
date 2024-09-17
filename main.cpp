@@ -12,11 +12,12 @@ vector<student> students;
 void showMenu(){
   cout<<"\n1. Add Student\n";
   cout<<"2. View All Students\n";
-  cout<<"3. Update Studenr Details\n";
-  cout<<"4. Delete Student\n";
-  cout<<"5. Calculate Average Grade\n";
-  cout<<"6. Find Highest and Lowest Grades\n";
-  cout<<"7. Exit\n";
+  cout<<"3. view only single student\n";
+  cout<<"4. Update Studenr Details\n";
+  cout<<"5. Delete Student\n";
+  cout<<"6. Calculate Average Grade\n";
+  cout<<"7. Find Highest and Lowest Grades\n";
+  cout<<"8. Exit\n";
   cout<<"Choose an option\n";
 }
 
@@ -59,39 +60,51 @@ void viewSinglestudent(){
     int choice;
     cin>>choice;
     for(size_t i = 0; i<students.size(); i++){
-        if(i == choice-1){
-            cout<<i+1<<". Name:"<<students[i+1].name<<". Grade"<<students[i+1].grade<<". Rollnumber"<<students[i+1].rollnumber;
+        if(students[i].rollnumber == choice){
+            cout<<i+1<<". Name:"<<students[i].name<<". Grade"<<students[i].grade<<". Rollnumber"<<students[i].rollnumber;
         }
-        else{
-            cout<<"invalid";
-        }
+        
     }
 }
 void updateStudent() {
-    viewStudents();
-    
-    if (students.empty()) return;
+    if (students.empty()) {
+        cout << "No students to update.\n";
+        return;
+    }
     
     int choice;
-    cout << "Enter the student number you want to update: ";
+    cout << "Enter student's roll number: ";
     cin >> choice;
 
-    if (choice > 0 && choice <= students.size()) {
-        cin.ignore(); 
-        cout << "Enter new name for student: ";
-        getline(cin, students[choice - 1].name);
+    bool studentFound = false;
+    
+    for (size_t i = 0; i < students.size(); i++) {
+        if (students[i].rollnumber == choice) {  
+            studentFound = true;
+            cin.ignore(); 
 
-        cout << "Enter new grade (0-100): ";
-        while (!(cin >> students[choice - 1].grade) || students[choice - 1].grade < 0 || students[choice - 1].grade > 100) {
-            cout << "Invalid grade! Please enter a number between 0 and 100: ";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+         
+            cout << "Enter new student's name: ";
+            getline(cin, students[i].name);
+
+           
+            cout << "Enter new student's grade (0-100): ";
+            while (!(cin >> students[i].grade) || students[i].grade < 0 || students[i].grade > 100) {
+                cout << "Invalid grade! Please enter a number between 0 and 100: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+
+            cout << "Student details updated successfully!\n";
+            break;
         }
-        cout << "Student details updated successfully!\n";
-    } else {
-        cout << "Invalid student number.\n";
+    }
+
+    if (!studentFound) {
+        cout << "Student with roll number " << choice << " not found.\n";
     }
 }
+
 void deleteStudent(){
     if(students.empty()){
         cout<<"No students present to delete";
@@ -116,8 +129,8 @@ void calculateAverageGrade(){
 
     }
     int sum = 0;
-    for (const auto& s : students) {
-        sum += s.grade;
+    for(size_t i = 0; i<students.size(); i++){
+        sum += students[i].grade;
     }
     double average = static_cast<double>(sum) / students.size();
     cout<<"Average grade:"<<average<<endl;
@@ -163,6 +176,9 @@ int main(){
             break;
             case 7:
             findHighestandLowestGrades();
+            break;
+            case 8:
+            cout<<"exiting...\n";
             break;
             default:
             cout<<"invalid choice taken";
