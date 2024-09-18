@@ -1,190 +1,212 @@
-#include<bits/stdc++.h>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+
 using namespace std;
 
-struct student{
+struct Student {
     string name;
     int rollnumber;
     int grade;
+    Student* next;  
 };
 
-vector<student> students;
 
-void showMenu(){
-  cout<<"\n1. Add Student\n";
-  cout<<"2. View All Students\n";
-  cout<<"3. view only single student\n";
-  cout<<"4. Update Studenr Details\n";
-  cout<<"5. Delete Student\n";
-  cout<<"6. Calculate Average Grade\n";
-  cout<<"7. Find Highest and Lowest Grades\n";
-  cout<<"8. Exit\n";
-  cout<<"Choose an option\n";
-}
+Student* head = nullptr;
 
-
-void addStudent(){
-    student s;
-    cout<<"enter student's name:";
+void addStudent() {
+    Student* newStudent = new Student;
+    
+    cout << "Enter student's name: ";
     cin.ignore();
-    getline(cin,s.name);
-    cout<<"enter student's grade(0-100):";
-    while(!(cin>>s.grade||s.grade<0 || s.grade>100)){
-        cout<<"Inavlid grade entered";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, newStudent->name);
+    
+    cout << "Enter student's roll number (1-2000): ";
+    cin >> newStudent->rollnumber;
+    
+    cout << "Enter student's grade (0-100): ";
+    cin >> newStudent->grade;
+    
+    newStudent->next = nullptr;
+    
+   
+    if (head == nullptr) {
+        head = newStudent;
+    } else {
+        
+        Student* temp = head;
+        while (temp->next != nullptr) {
+            temp = temp->next;
+        }
+        temp->next = newStudent;
     }
-    cout<<"enter student's rollnumber(1-2000):";
-    while(!(cin>>s.rollnumber || s.rollnumber<1 || s.rollnumber>2000)){
-       cout<<"invalid roll call";
-       cin.clear();
-       cin.ignore(numeric_limits<streamsize>::max(),'\n');
-    }
-    students.push_back(s);
-    cout<<"student added successfully";
+
+    cout << "Student added successfully!" << endl;
 }
-void viewStudents(){
-    if(students.empty()){
-        cout<<"NO STUDENTS PRESENT CURRENTLY!";
+
+void viewStudents() {
+    if (head == nullptr) {
+        cout << "No students present." << endl;
         return;
     }
-    else{
-        cout<<"student List:\n";
-        for(size_t i = 0; i<students.size(); i++){
-            cout<<i+1<<". Name:"<<students[i].name<<". Grade"<<students[i].grade<<". Roll Number"<<students[i].rollnumber;
-        }
-    }
-}
-void viewSinglestudent(){
-    if(students.empty()) return;
-    cout<<"enter student roll number:";
-    int choice;
-    cin>>choice;
-    for(size_t i = 0; i<students.size(); i++){
-        if(students[i].rollnumber == choice){
-            cout<<i+1<<". Name:"<<students[i].name<<". Grade"<<students[i].grade<<". Rollnumber"<<students[i].rollnumber;
-        }
-        
+    
+    Student* temp = head;
+    while (temp != nullptr) {
+        cout << "Name: " << temp->name << ", Roll Number: " << temp->rollnumber << ", Grade: " << temp->grade << endl;
+        temp = temp->next;
     }
 }
 void updateStudent() {
-    if (students.empty()) {
-        cout << "No students to update.\n";
+    if (head == nullptr) {
+        cout << "No students present to update." << endl;
         return;
     }
-    
-    int choice;
-    cout << "Enter student's roll number: ";
-    cin >> choice;
 
-    bool studentFound = false;
-    
-    for (size_t i = 0; i < students.size(); i++) {
-        if (students[i].rollnumber == choice) {  
-            studentFound = true;
-            cin.ignore(); 
+    int rollNumber;
+    cout << "Enter student's roll number to update: ";
+    cin >> rollNumber;
 
-         
-            cout << "Enter new student's name: ";
-            getline(cin, students[i].name);
+    Student* temp = head;
+    while (temp != nullptr) {
+        if (temp->rollnumber == rollNumber) {
+            cout << "Enter new name: ";
+            cin.ignore();
+            getline(cin, temp->name);
+            cout << "Enter new grade (0-100): ";
+            cin >> temp->grade;
+            cout << "Student updated successfully!" << endl;
+            return;
+        }
+        temp = temp->next;
+    }
+    cout << "Student with roll number " << rollNumber << " not found." << endl;
+}
+void deleteStudent() {
+    if (head == nullptr) {
+        cout << "No students to delete." << endl;
+        return;
+    }
 
-           
-            cout << "Enter new student's grade (0-100): ";
-            while (!(cin >> students[i].grade) || students[i].grade < 0 || students[i].grade > 100) {
-                cout << "Invalid grade! Please enter a number between 0 and 100: ";
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    int rollNumber;
+    cout << "Enter roll number of the student to delete: ";
+    cin >> rollNumber;
+
+    // If the student to delete is the head
+    if (head->rollnumber == rollNumber) {
+        Student* temp = head;
+        head = head->next;
+        delete temp;
+        cout << "Student deleted successfully!" << endl;
+        return;
+    }
+
+    // Traverse the list to find the student to delete
+    Student* current = head;
+    Student* previous = nullptr;
+
+    while (current != nullptr && current->rollnumber != rollNumber) {
+        previous = current;
+        current = current->next;
+    }
+
+    if (current == nullptr) {
+        cout << "Student with roll number " << rollNumber << " not found." << endl;
+        return;
+    }
+
+    previous->next = current->next;
+    delete current;
+    cout << "Student deleted successfully!" << endl;
+}
+void saveToFile() {
+    ofstream outFile("students.txt");
+    if (!outFile) {
+        cout << "Error creating file!" << endl;
+        return;
+    }
+
+    Student* temp = head;
+    while (temp != nullptr) {
+        outFile << temp->name << " " << temp->rollnumber << " " << temp->grade << endl;
+        temp = temp->next;
+    }
+
+    outFile.close();
+    cout << "Student data saved to students.txt successfully!" << endl;
+}
+
+void loadFromFile() {
+    ifstream inFile("students.txt");
+    if (!inFile) {
+        cout << "No student data file found. Starting with an empty list." << endl;
+        return;
+    }
+
+    // Clear current linked list
+    while (head != nullptr) {
+        Student* temp = head;
+        head = head->next;
+        delete temp;
+    }
+
+    // Load data from file
+    string name;
+    int rollnumber, grade;
+    while (inFile >> name >> rollnumber >> grade) {
+        Student* newStudent = new Student{name, rollnumber, grade, nullptr};
+        
+        if (head == nullptr) {
+            head = newStudent;
+        } else {
+            Student* temp = head;
+            while (temp->next != nullptr) {
+                temp = temp->next;
             }
-
-            cout << "Student details updated successfully!\n";
-            break;
+            temp->next = newStudent;
         }
     }
 
-    if (!studentFound) {
-        cout << "Student with roll number " << choice << " not found.\n";
-    }
+    inFile.close();
+    cout << "Student data loaded successfully!" << endl;
 }
-
-void deleteStudent(){
-    if(students.empty()){
-        cout<<"No students present to delete";
-    }
-    viewStudents();
+int main() {
     int choice;
-    cout<<"enter student's rollcall:";
-    cin>>choice;
-    if(choice>0 && choice<=students.size()){
-        students.erase(students.begin() + (choice - 1));
-        cout<<"student deleted successfully";
-    }
-    else{
-        cout<<"Invalid rollcall";
-    }
 
-}
-void calculateAverageGrade(){
-    if(students.empty()){
-        cout<<" No student is present in the list";
-        return;
+    loadFromFile(); // Load data from file on startup
 
-    }
-    int sum = 0;
-    for(size_t i = 0; i<students.size(); i++){
-        sum += students[i].grade;
-    }
-    double average = static_cast<double>(sum) / students.size();
-    cout<<"Average grade:"<<average<<endl;
-}
-void findHighestandLowestGrades(){
-    if(students.empty()){
-        cout<<"no students present";
-    }
-    int highestGrade = students[0].grade;
-    int lowestGrade = students[0].grade;
-    for (const auto& s : students) {
-        if (s.grade > highestGrade) highestGrade = s.grade;
-        if (s.grade < lowestGrade) lowestGrade = s.grade;
-    }
-    cout<<"'highest grade is:'"<<highestGrade<<endl;
-    cout<<"'lowest grade is:'"<<lowestGrade<<endl;
-}
-int main(){
-    int choice;
-    
-    do{
-        showMenu();
-        cout<<"enter your choice:"<<endl;
-        cin>>choice;
-        switch(choice){
+    do {
+        cout << "\n1. Add Student\n2. View All Students\n3. Update Student\n4. Delete Student\n5. Save to File\n6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
             case 1:
-            addStudent();
-            break;
+                addStudent();
+                break;
             case 2:
-            viewStudents();
-            break;
+                viewStudents();
+                break;
             case 3:
-            viewSinglestudent();
-            break;
+                updateStudent();
+                break;
             case 4:
-            updateStudent();
-            break;
+                deleteStudent();
+                break;
             case 5:
-            deleteStudent();
-            break;
+                saveToFile();
+                break;
             case 6:
-            calculateAverageGrade();
-            break;
-            case 7:
-            findHighestandLowestGrades();
-            break;
-            case 8:
-            cout<<"exiting...\n";
-            break;
+                cout << "Exiting...\n";
+                break;
             default:
-            cout<<"invalid choice taken";
-            break;
+                cout << "Invalid choice. Try again." << endl;
         }
-    }
-    while(choice<8 && choice>0);
+    } while (choice != 6);
+
+    saveToFile(); // Save data to file before exiting
     return 0;
 }
